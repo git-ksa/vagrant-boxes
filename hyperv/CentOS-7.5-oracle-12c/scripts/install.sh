@@ -14,19 +14,30 @@
 echo 'INSTALLER: Started up'
 
 # get up to date
-yum upgrade -y
+# yum upgrade -y
 
-echo 'INSTALLER: System updated'
+# echo 'INSTALLER: System updated'
 
 # fix locale warning
-yum reinstall -y glibc-common
-echo LANG=en_US.utf-8 >> /etc/environment
-echo LC_ALL=en_US.utf-8 >> /etc/environment
-
-echo 'INSTALLER: Locale set'
+#yum reinstall -y glibc-common
+#echo LANG=en_US.utf-8 >> /etc/environment
+#echo LC_ALL=en_US.utf-8 >> /etc/environment
+#
+# echo 'INSTALLER: Locale set'
 
 # Install Oracle Database prereq and openssl packages
-yum install -y oracle-database-server-12cR2-preinstall openssl
+
+echo 'Install Oracle Database prereq and openssl packages'
+
+yum install epel-release mc wget unzip rlwrap openssl -y
+
+cd /etc/yum.repos.d
+wget --no-check-certificate https://public-yum.oracle.com/public-yum-ol7.repo
+
+#yum install -y --nodeps --nogpgcheck oracle-database-server-12cR2-preinstall
+# CentOS 7.5 .....
+yum install -y --nogpgcheck oracle-rdbms-server-12cR1-preinstall
+
 
 echo 'INSTALLER: Oracle preinstall and openssl complete'
 
@@ -74,19 +85,19 @@ su -l oracle -c "echo 'LISTENER =
   ) 
 ) 
 
+SID_LIST_LISTENER =
+ (SID_LIST =
+    (SID_DESC =
+      (GLOBAL_DBNAME = db12c)
+      (SID_NAME = $ORACLE_SID)
+    )
+ )
+
 DEDICATED_THROUGH_BROKER_LISTENER=ON
 DIAG_ADR_ENABLED = off
 ' > $ORACLE_HOME/network/admin/listener.ora"
 
 su -l oracle -c "echo '$ORACLE_SID=localhost:1521/$ORACLE_SID' > $ORACLE_HOME/network/admin/tnsnames.ora"
-su -l oracle -c "echo '$ORACLE_PDB= 
-(DESCRIPTION = 
-  (ADDRESS = (PROTOCOL = TCP)(HOST = 0.0.0.0)(PORT = 1521))
-  (CONNECT_DATA =
-    (SERVER = DEDICATED)
-    (SERVICE_NAME = $ORACLE_PDB)
-  )
-)' >> $ORACLE_HOME/network/admin/tnsnames.ora"
 
 # Start LISTENER
 su -l oracle -c "lsnrctl start"
@@ -100,14 +111,9 @@ export ORACLE_PWD=${ORACLE_PWD:-"`openssl rand -base64 8`1"}
 
 cp /vagrant/ora-response/dbca.rsp.tmpl /vagrant/ora-response/dbca.rsp
 sed -i -e "s|###ORACLE_SID###|$ORACLE_SID|g" /vagrant/ora-response/dbca.rsp && \
-sed -i -e "s|###ORACLE_PDB###|$ORACLE_PDB|g" /vagrant/ora-response/dbca.rsp && \
 sed -i -e "s|###ORACLE_CHARACTERSET###|$ORACLE_CHARACTERSET|g" /vagrant/ora-response/dbca.rsp && \
 sed -i -e "s|###ORACLE_PWD###|$ORACLE_PWD|g" /vagrant/ora-response/dbca.rsp
 su -l oracle -c "dbca -silent -createDatabase -responseFile /vagrant/ora-response/dbca.rsp"
-su -l oracle -c "sqlplus / as sysdba <<EOF
-   ALTER PLUGGABLE DATABASE $ORACLE_PDB SAVE STATE;
-   exit;
-EOF"
 rm /vagrant/ora-response/dbca.rsp
 
 echo 'INSTALLER: Database created'
@@ -125,10 +131,9 @@ echo "INSTALLER: Created and enabled oracle-rdbms systemd's service"
 
 sudo cp /vagrant/scripts/setPassword.sh /home/oracle/ && \
 sudo chmod a+rx /home/oracle/setPassword.sh
-sudo chown oracle:oinstall /home/oracle/setPassword.sh
 
 echo "INSTALLER: setPassword.sh file setup";
 
-echo "ORACLE PASSWORD FOR SYS, SYSTEM AND PDBADMIN: $ORACLE_PWD";
+echo "ORACLE PASSWORD FOR SYS, SYSTEM: $ORACLE_PWD";
 
 echo "INSTALLER: Installation complete, database ready to use!";
