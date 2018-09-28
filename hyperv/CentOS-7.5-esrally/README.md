@@ -6,7 +6,7 @@ A vagrant box that provisions ElasticSearch esrally on CentOS 7.5
 2. Install [Vagrant](https://vagrantup.com/)
 
 ## Getting started
-1. Clone this repository `git clone https://github.com/sakrivega/vagrant-boxes`
+1. Clone this repository `git clone https://github.com/krivegasa/vagrant-boxes`
 2. Change into the desired version folder 
 
 ## Run
