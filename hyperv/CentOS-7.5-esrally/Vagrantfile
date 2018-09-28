@@ -1,0 +1,32 @@
+#
+# LICENSE UPL 1.0
+#
+
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "ksa/centos7_cifs"
+  
+#  config.vm.synced_folder ".", "/vagrant", type:"smb", smb_host:"192.168.137.1", smb_username: "username", smb_password: "*******", mount_options: ["vers=3.0"]
+  config.vm.synced_folder ".", "/vagrant", type:"smb", smb_host:"192.168.137.1", mount_options: ["vers=3.0"]
+
+  config.vm.provider "hyperv" do |v|
+    v.memory = 1024
+    v.vmname = "CentOS7-elasticsearch-bench"
+  end
+
+
+  config.ssh.insert_key = false  
+
+  # Provision everything on the first run
+  config.vm.provision "shell", path: "scripts/install.sh", env:
+    {
+       "JAVA_HOME"         => "/usr/lib/jvm/jre-1.8.0",
+       "JAVA8_HOME"         => "/usr/lib/jvm/jre-1.8.0",
+    }
+
+end
