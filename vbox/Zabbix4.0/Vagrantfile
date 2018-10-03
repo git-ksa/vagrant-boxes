@@ -1,0 +1,32 @@
+# vagrant / zabbix 4.0 / virtualbox
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "bento/ubuntu-16.04"
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+
+  config.vm.provision "shell", inline: <<-SHELL
+    wget http://repo.zabbix.com/zabbix/4.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_4.0-2%2Bxenial_all.deb
+    dpkg -i zabbix-release_4.0-2+xenial_all.deb;
+    apt-get update;
+    apt-get install zabbix-server-mysql zabbix-frontend-php php-bcmath php-mbstring php-xml -y;
+    sed 's@;date.timezone =@date.timezone=Europe/Moscow@' -i /etc/php/7.0/apache2/php.ini;
+    echo -e "[mysqld]\ndefault-storage-engine = innodb" | sudo tee /etc/mysql/conf.d/mysqld.conf;
+    service mysql restart;
+    mysql -e "CREATE USER 'zabbix'@'localhost' IDENTIFIED BY 'zabbix';";
+    mysql -e "create database zabbix character set utf8 collate utf8_bin;"
+    mysql -e "grant all privileges on zabbix.* to zabbix@localhost identified by 'zabbix';";
+    zcat /usr/share/doc/zabbix-server-mysql/create.sql.gz | mysql -uzabbix -p"zabbix" zabbix;
+    sed 's/# DBPassword=/DBPassword=zabbix/g' /etc/zabbix/zabbix_server.conf -i;
+    service zabbix-server restart;
+    service apache2 restart;
+    apt-get install zabbix-agent -y
+    service zabbix-agent start
+
+    echo "Zabbix frontend is ready!"
+    echo "open http://host_ip:8080/zabbix"
+    echo "The default user name is Admin, password zabbix."
+
+  SHELL
+end
