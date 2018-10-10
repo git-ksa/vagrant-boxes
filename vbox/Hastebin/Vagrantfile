@@ -1,0 +1,19 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "centos/7"
+  
+  config.vm.box_check_update = false
+  
+  # change memory size
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 1024
+    v.name = 'CentOS7_hastebin'
+  end
+
+  config.vm.network "forwarded_port", guest: 7777, host: 80
+  config.vm.provision "shell", path: "scripts/install.sh"
+end
