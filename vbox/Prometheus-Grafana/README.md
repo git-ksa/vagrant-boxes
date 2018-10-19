@@ -14,8 +14,8 @@ First install vagrant and virtualbox on your machine.
 After installing vagrant, just clone this github repo.
 
 ```
-git clone https://github.com/viveksatasiya/vagrant-prometheus-grafana.git
-cd vagrant-prometheus-grafana/
+git clone https://github.com/krivegasa/vagrant-boxes.git
+cd vagrant-boxes/vbox/Prometheus-Grafana/
 vagrant up
 ```
 
@@ -26,6 +26,7 @@ After successful installation, you can visit urls on your host os which are ment
 ```
 Prometheus - http://localhost:9090/
 Grafana - http://localhost:3000/
+Node_exporter - http://localhost:9100/metrics
 ```
 
 Ports 9090 & 3000 are exposed and bound to the host os via Vagrantfile so we can access dashboards from virtual machine to host os.
