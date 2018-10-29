@@ -1,0 +1,2 @@
+@reboot  /home/netdisco/bin/netdisco-web start --host=127.0.0.1
+@reboot  /home/netdisco/bin/netdisco-daemon start
