@@ -1,0 +1,32 @@
+#
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "centos/7"
+  
+  # change memory size
+  config.vm.synced_folder ".", "/vagrant"
+
+  config.vm.provider "virtualbox" do |vb|
+    # Display the VirtualBox GUI when booting the machine
+    # vb.gui = true
+
+    # Customize the amount of memory on the VM:
+    vb.memory = "2048"
+    vb.cpus = 4
+    vb.name = "CentOS7-oracle-xe18c-vagrant"
+  end
+
+  # Oracle port forwarding
+  config.vm.network "forwarded_port", guest: 1521, host: 1521
+  config.vm.network "forwarded_port", guest: 5500, host: 5500
+
+  config.ssh.insert_key = false  
+
+  # Provision everything on the first run
+  config.vm.provision "shell", path: "install_xe18c.sh"
+end
