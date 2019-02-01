@@ -1,5 +1,5 @@
-# oracle12c-vagrant
-A vagrant box that provisions Oracle Database automatically, using Vagrant, an Oracle Linux 7.3 box and a shell script.
+# oracle11.2.0.4-vagrant
+A vagrant box that provisions Oracle Database automatically, using Vagrant, an Centos 7.5 box and a shell script.
 
 ## Prerequisites
 1. Enable Hyper-V
@@ -23,7 +23,7 @@ p13390677_112040_Linux-x86-64_2of7.zip
 ## Connecting to Oracle
 * Hostname: `localhost`
 * Port: `1521`
-* SID: `ORCLCDB`
+* SID: `ORCL`
 * OEM port: `5500`
 * All passwords are auto-generated and printed on install
 
@@ -41,9 +41,9 @@ You can reset the password of the Oracle database accounts by executing `/home/o
 You can customize your Oracle environment by amending the environment variables in the `Vagrantfile` file.
 The following can be customized:
 * `ORACLE_BASE`: `/opt/oracle/`
-* `ORACLE_HOME`: `/opt/oracle/product/12.2.0.1/dbhome_1`
-* `ORACLE_SID`: `ORCLCDB`
-* `ORACLE_PDB`: `ORCLPDB1`
+* `ORACLE_HOME`: `/opt/oracle/product/11.2.0.4/dbhome_1`
+* `ORACLE_SID`: `ORCL`
 * `ORACLE_CHARACTERSET`: `AL32UTF8`
-* `ORACLE_EDITION`: `EE` | `SE2`
+* `ORACLE_EDITION`: `EE`
 * `ORACLE_PWD`: `auto generated`
+
