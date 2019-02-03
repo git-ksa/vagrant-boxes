@@ -1,5 +1,5 @@
 # oracle11.2.0.4-vagrant
-A vagrant box that provisions Oracle Database automatically, using Vagrant, an Centos 7.5 box and a shell script.
+A vagrant box that provisions Oracle Database automatically, using Vagrant, an CentOS 7.6 box and a shell script.
 
 ## Prerequisites
 1. Enable Hyper-V
