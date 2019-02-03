@@ -29,7 +29,7 @@ echo 'INSTALLER: Started up'
 
 echo 'Install Oracle Database prereq and openssl packages'
 
-yum install epel-release mc wget unzip rlwrap openssl -y
+yum install epel-release mc wget unzip rlwrap openssl htop -y
 
 cd /etc/yum.repos.d
 wget --no-check-certificate https://public-yum.oracle.com/public-yum-ol7.repo
