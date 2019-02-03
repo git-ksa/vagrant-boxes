@@ -2,7 +2,8 @@
 A vagrant box that provisions Oracle Database automatically, using Vagrant, an CentOS 7.6 box and a shell script.
 
 ## Prerequisites
-1. Enable Hyper-V
+
+1. Install [VirtualBox](https://www.virtualbox.org/)
 2. Install [Vagrant](https://vagrantup.com/)
 
 ## Getting started
