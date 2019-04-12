@@ -81,8 +81,13 @@ Run the following command for origin 3.8 or above:
 vagrant ssh master \
         -c 'ansible-playbook /home/vagrant/openshift-ansible/playbooks/prerequisites.yml &&
             ansible-playbook /home/vagrant/openshift-ansible/playbooks/deploy_cluster.yml'
-```
 
+```
+### Install Origin Cluster Using Ansible (Windows)
+
+```bash
+postinstall_win.cmd 
+```
 ### `oc-up.sh`
 
 The above 3 steps have been grouped together as one script for you. To bring your cluster up, just use the following command:
