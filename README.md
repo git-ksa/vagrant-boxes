@@ -1,5 +1,5 @@
 # vagrant-boxes
-A vagrant box that provisions Oracle software automatically, using Vagrant, an Oracle Linux box and a shell script.
+A vagrant box that provisions software automatically, using Vagrant and a shell script.
 
 ## Prerequisites
 1. Install [Oracle VM VirtualBox](https://www.virtualbox.org/wiki/Downloads)
