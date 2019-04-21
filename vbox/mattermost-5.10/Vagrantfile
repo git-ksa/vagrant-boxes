@@ -1,0 +1,39 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrant Mattermost
+# (c) 2016 Ian Dennis Miller
+# http://github.com/iandennismiller/vagrant-mattermost
+
+# This Vagrantfile based upon lloeki's work:
+# https://github.com/lloeki/matterfront/blob/master/Vagrantfile
+
+Vagrant.configure(2) do |config|
+
+  # use basic ubuntu/trusty64 as base box
+  config.vm.box = "ubuntu/trusty64"
+  config.vm.hostname = "mattermost"
+
+  # configure network for private mattermost instance at http://192.168.33.33
+  config.vm.network "private_network", ip: "192.168.33.33"
+
+  config.vm.network "forwarded_port", guest: 80, host: 80
+  config.vm.network "forwarded_port", guest: 443, host: 443
+
+  # set up virtualbox configurations for this vm
+  config.vm.provider "virtualbox" do |vb|
+    vb.cpus = 2
+    vb.name = "mattermost-dev"
+    vb.memory = "2048"
+  end
+
+  # configure base system
+  config.vm.provision :shell, path: "bootstrap.sh"
+
+  # install mattermost
+  config.vm.provision :shell, path: "files/mattermost/install.sh"
+
+  # install mattermost-github-integration (optional)
+  # config.vm.provision :shell, path: "files/mattermost-github-integration/install.sh"
+
+end
