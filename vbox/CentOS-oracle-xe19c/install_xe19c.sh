@@ -30,7 +30,7 @@ systemctl enable oracledb_ORCLCDB-19c
 rpm -qa | grep oracle
 
 cat > /home/oracle/setEnv.sh <<EOF 
-export ORACLE_HOME=/opt/oracle/product/19c/dbhomeXE
+export ORACLE_HOME=/opt/oracle/product/19c/dbhome_1
 export ORACLE_SID=ORCLCDB
 export PATH=\$ORACLE_HOME/bin:\$PATH
 EOF
