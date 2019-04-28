@@ -36,7 +36,7 @@ export PATH=\$ORACLE_HOME/bin:\$PATH
 EOF
 
 cat >> /home/oracle/.bash_profile <<EOF
-. /home/oracle/scripts/setEnv.sh
+. /home/oracle/setEnv.sh
 EOF
 
 # check DB connect
