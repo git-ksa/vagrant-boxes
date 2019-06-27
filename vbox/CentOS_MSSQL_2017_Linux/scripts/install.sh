@@ -84,7 +84,7 @@ errstatus=1
 while [ $counter -le 5 ] && [ $errstatus = 1 ]
 do
   echo Waiting for SQL Server to start...
-  sleep 5s
+  sleep 60s
   /opt/mssql-tools/bin/sqlcmd \
     -S localhost \
     -U SA \
