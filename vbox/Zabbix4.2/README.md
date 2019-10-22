@@ -14,7 +14,7 @@ After installing vagrant, just clone this github repo.
 
 ```
 git clone https://github.com/krivegasa/vagrant-boxes.git
-cd vagrant-boxes/vbox/zabbix 4.2/
+cd vagrant-boxes/vbox/Zabbix4.2/
 vagrant up
 ```
 
