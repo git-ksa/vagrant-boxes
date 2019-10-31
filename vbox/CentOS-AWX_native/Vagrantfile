@@ -1,0 +1,25 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "centos/7"
+#  config.vm.box_version = "1902.01"  
+#  config.vm.box_version = "1812.01"
+  config.vm.box_check_update = false
+  
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 2048
+    v.cpus = 2
+    v.name = 'awx-native'
+  end
+  config.ssh.insert_key = false  
+
+  config.vm.network "forwarded_port", guest: 8052, host: 80
+#semanage port -a -t http_port_t -p tcp 8050
+#semanage port -a -t http_port_t -p tcp 8051
+#semanage port -a -t http_port_t -p tcp 8052
+
+  config.vm.provision "shell", path: "scripts/install.sh"
+end
