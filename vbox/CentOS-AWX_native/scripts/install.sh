@@ -59,6 +59,8 @@ wget -O /etc/nginx/nginx.conf https://raw.githubusercontent.com/MrMEEE/awx-build
 systemctl start awx
 systemctl enable awx
 
+yum -y install ansible 
+
 rm -f /opt/awx/static/assets/logo-login.svg
 rm -f /opt/awx/static/assets/llogo-header.svg
 wget -O /opt/awx/static/assets/logo-login.svg https://raw.githubusercontent.com/ansible/awx-logos/master/awx/ui/client/assets/logo-login.svg
