@@ -18,18 +18,10 @@ cd vagrant-boxes/vbox/CentOS8_Zabbix4.4/
 vagrant up
 ```
 
-vagrant up command will download precise64 box which is ubuntu machine and run provision.sh file to install and configure prometheus & grafana into the virtual machine. 
-
 After successful installation, you can visit urls on your host os which are mentioned below to see zabbix 4.4 dashboard
 
 ```
 Zabbix - http://localhost:8080/zabbix
-```
-
-If you want to edit any configuration in virtual machine then you can do ssh via following command from the same git directory.You will get remote shell of ubuntu virtual machine from host os.
-
-```
-vagrant ssh
 ```
 
 Default username **Admin**
