@@ -14,7 +14,7 @@ After installing vagrant, just clone this github repo.
 
 ```
 git clone https://github.com/krivegasa/vagrant-boxes.git
-cd vagrant-boxes/vbox/CentOS_Zabbix4.4/
+cd vagrant-boxes/vbox/CentOS8_Zabbix4.4/
 vagrant up
 ```
 
