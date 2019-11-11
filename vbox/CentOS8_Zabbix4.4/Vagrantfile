@@ -14,7 +14,7 @@ Vagrant.configure("2") do |config|
     setenforce 0
     yum update
     yum install mc mysql-server -y
-    yum install zabbix-server-mysql zabbix-web-mysql zabbix-apache-conf mc mysql-server -y
+    yum install zabbix-server-mysql zabbix-web-mysql zabbix-apache-conf -y
     sed -i "s|; ||g" /etc/php-fpm.d/zabbix.conf
     sed -i "s|Europe/Riga|Europe/Moscow|g" /etc/php-fpm.d/zabbix.conf
     echo -e "[mysqld]\ndefault-storage-engine = innodb" | sudo tee /etc/my.cnf.d/mysql-server.cnf
