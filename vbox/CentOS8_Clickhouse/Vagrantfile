@@ -1,0 +1,27 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "bento/centos-8"
+  config.vm.network "forwarded_port", guest: 8123, host: 8123
+  config.vm.provision "shell", inline: <<-SHELL
+
+    yum install yum-utils
+    rpm --import https://repo.yandex.ru/clickhouse/CLICKHOUSE-KEY.GPG
+    yum-config-manager --add-repo https://repo.yandex.ru/clickhouse/rpm/stable/x86_64
+    yum install clickhouse-server clickhouse-client -y
+    systemctl enable clickhouse-server
+    systemctl start clickhouse-server
+    systemctl status clickhouse-server
+    curl 'http://localhost:8123/?query=SELECT%201'
+    echo "SELECT 1 FORMAT Pretty" | curl 'http://localhost:8123/?' --data-binary @-
+    echo 'CREATE TABLE t (a UInt8) ENGINE = Memory' | curl 'http://localhost:8123/' --data-binary @-
+    echo 'INSERT INTO t VALUES (1),(2),(3)' | curl 'http://localhost:8123/' --data-binary @-
+    echo '(4),(5),(6)' | curl 'http://localhost:8123/?query=INSERT%20INTO%20t%20VALUES' --data-binary @-
+    echo '(7),(8),(9)' | curl 'http://localhost:8123/?query=INSERT%20INTO%20t%20FORMAT%20Values' --data-binary @-
+    echo -ne '10\n11\n12\n' | curl 'http://localhost:8123/?query=INSERT%20INTO%20t%20FORMAT%20TabSeparated' --data-binary @-
+    curl 'http://localhost:8123/?query=SELECT%20a%20FROM%20t'
+    echo "Clickhouse is ready on http://localhost:8123"
+
+  SHELL
+end
