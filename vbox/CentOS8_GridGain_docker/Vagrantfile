@@ -1,0 +1,42 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "bento/centos-8"
+  config.vm.network "forwarded_port", guest: 10800, host: 10800
+  config.vm.provision "shell", inline: <<-SHELL
+   yum install -y mc docker net-tools telnet python3
+   mkdir /data
+   docker pull gridgain/community
+   docker run -d -p 10800:10800  -v /data:/persistence -e IGNITE_WORK_DIR=/persistence gridgain/community
+   sleep 5
+   echo "===================================="
+   echo "GridGain is ready on localhost:10800"
+   echo "Data directory /data on host"
+   echo "========= testing =================="
+   pip3 install pygridgain
+   cat > /root/test.py <<EOF
+
+from pygridgain import Client
+
+client = Client()
+client.connect('127.0.0.1', 10800)
+
+#Create cache
+my_cache = client.create_cache('my cache')
+
+#Put value in cache
+my_cache.put(1, 'Hello World')
+
+#Get value from cache
+result = my_cache.get(1)
+print(result)
+
+EOF
+   sleep 5
+   echo "========= execute: test.py ============"
+   cat /root/test.py
+   echo "==============  result  ==============="
+   python3 /root/test.py
+ SHELL
+end
