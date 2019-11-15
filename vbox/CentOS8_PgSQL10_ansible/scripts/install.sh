@@ -30,7 +30,7 @@ cat > pg.yaml <<EOF
   vars:
       postgresql_python_library: python3-psycopg2
       postgresql_databases:
-         - name: pg12_db
+         - name: pg10_db
       postgresql_users:
          - name: r00t
            password: rootroot
