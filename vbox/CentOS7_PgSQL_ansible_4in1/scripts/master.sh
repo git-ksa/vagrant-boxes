@@ -58,6 +58,8 @@ postgresql_hot_standby: on
 postgresql_users:
    - name: replicate
      pass: replicate123
+   - name: postgres
+     pass: postgres123
 postgresql_databases:
    - name: db01
      owner: postgres
