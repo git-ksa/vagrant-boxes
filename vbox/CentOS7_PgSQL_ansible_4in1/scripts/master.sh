@@ -9,7 +9,6 @@ sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 setenforce 0
 #reboot
 
-#yum install mc telnet net-tools -y
 yum -y install git ansible python-psycopg2
 
 ansible --version
@@ -63,28 +62,27 @@ postgresql_users:
 postgresql_databases:
    - name: db01
      owner: postgres
+
+postgresql_database_extensions:
+  - db: db01
+    extensions:
+       - pg_stat_statements
+
 postgresql_user_privileges:
    - name: replicate
      db: db01
      priv: "ALL"
      role_attr_flags: "CREATEDB"
+# flags: "LOGIN,SUPERUSER"
 EOF
 
 cat > /home/vagrant/host_vars/slave1.yaml <<EOF
-postgresql_version: 9.6
-postgresql_ext_install_contrib: yes
-postgresql_listen_addresses: "*"
-postgresql_max_connections: 150
 postgresql_pg_hba_custom:
    - { type: host,  database: all, user: all, address: "10.0.0.0/8",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
    - { type: host,  database: all, user: all, address: "192.168.4.0/24",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
 EOF
 
 cat > /home/vagrant/host_vars/slave2.yaml <<EOF
-postgresql_version: 9.6
-postgresql_ext_install_contrib: yes
-postgresql_listen_addresses: "*"
-postgresql_max_connections: 150
 postgresql_pg_hba_custom:
    - { type: host,  database: all, user: all, address: "10.0.0.0/8",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
    - { type: host,  database: all, user: all, address: "192.168.4.0/24",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
@@ -92,10 +90,6 @@ postgresql_pg_hba_custom:
 EOF
 
 cat > /home/vagrant/host_vars/slave3.yaml <<EOF
-postgresql_version: 9.6
-postgresql_ext_install_contrib: yes
-postgresql_listen_addresses: "*"
-postgresql_max_connections: 150
 postgresql_pg_hba_custom:
    - { type: host,  database: all, user: all, address: "10.0.0.0/8",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
    - { type: host,  database: all, user: all, address: "192.168.4.0/24",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
@@ -136,6 +130,18 @@ cat > pg-m-s.yaml <<EOF
      when: hostvars[item].ansible_host is defined
      with_items: "{{ groups.all }}"
      tags: etc_hosts
+  vars:
+     postgresql_version: 9.6
+     postgresql_ext_install_contrib: yes
+     postgresql_listen_addresses: "*"
+     postgresql_max_connections: 150
+     postgresql_data_directory: "/u01/data"
+     postgresql_conf_directory: "{{ postgresql_data_directory }}"
+     postgresql_shared_preload_libraries: 
+        - pg_stat_statements
+     postgresql_extensions:
+        - hstore
+        - pg_stat_statements
   roles:
     - role: anxs.postgresql
 EOF
