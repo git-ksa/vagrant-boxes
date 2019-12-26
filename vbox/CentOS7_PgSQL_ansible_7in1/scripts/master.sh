@@ -56,8 +56,8 @@ cat > /home/vagrant/host_vars/master.yaml <<EOF
 #prepare for standby
 postgresql_wal_level: hot_standby
 postgresql_wal_log_hints: on
-postgresql_max_wal_senders: 8
-postgresql_wal_keep_segments: 64
+postgresql_max_wal_senders: 64
+postgresql_wal_keep_segments: 128
 postgresql_hot_standby: on
 postgresql_users:
    - name: replicate
