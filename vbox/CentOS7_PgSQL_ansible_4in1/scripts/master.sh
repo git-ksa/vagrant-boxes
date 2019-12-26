@@ -13,41 +13,43 @@ yum -y install git ansible python-psycopg2
 
 ansible --version
 
-# galaxy up to 11 version support
-#ansible-galaxy  install anxs.postgresql
-#mv /root/.ansible/roles/ /home/vagrant/
-
 # for v12 support use github repo
-git clone https://github.com/ANXS/postgresql /home/vagrant/roles/anxs.postgresql
+#git clone https://github.com/ANXS/postgresql /home/vagrant/roles/anxs.postgresql
+
+git clone https://github.com/krivegasa/ansible /home/vagrant/ansible
+mkdir -p /home/vagrant/roles
+mv /home/vagrant/ansible/postgresql /home/vagrant/roles/postgresql
 
 mkdir -p /home/vagrant/host_vars
+mkdir -p /home/vagrant/group_vars
 chown -R vagrant:vagrant /home/vagrant/
 
-# based on https://severalnines.com/database-blog/postgresql-deployment-and-maintenance-ansible
-
 cat > inventory <<EOF
-[db]
+[dbmaster]
 #master  ansible_connection=local ansible_python_interpreter="/usr/libexec/platform-python"
 master  ansible_host=192.168.4.2
+[dbslave]
 slave1  ansible_host=192.168.4.3
 slave2  ansible_host=192.168.4.4
 slave3  ansible_host=192.168.4.5
 EOF
 
+
+#create group vars files
+cat > /home/vagrant/group_vars/dbslave.yaml <<EOF
+      postgresql_is_slave: "yes"
+      masterip: master
+
+      masterpass: postgres123
+
+      postgresql_pg_hba_custom:
+         - { type: host,  database: all, user: all, address: "10.0.0.0/8",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
+         - { type: host,  database: all, user: all, address: "192.168.4.0/24",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
+EOF
+
+
 #create host vars files
 cat > /home/vagrant/host_vars/master.yaml <<EOF
-postgresql_version: 9.6
-postgresql_ext_install_contrib: yes
-postgresql_listen_addresses: "*"
-postgresql_max_connections: 150
-postgresql_pg_hba_custom:
-   - { type: host,  database: all, user: all, address: "10.0.0.0/8",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
-   - { type: host,  database: all, user: all, address: "192.168.4.0/24",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
-   - { type: host,  database: replication, user: all, address: "192.168.4.0/24",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
-
-#host    replication      postgres       10.0.0.0/8            md5
-#host    all              postgres       10.0.0.0/8            md5
-
 #prepare for standby
 postgresql_wal_level: hot_standby
 postgresql_wal_log_hints: on
@@ -59,6 +61,12 @@ postgresql_users:
      pass: replicate123
    - name: postgres
      pass: postgres123
+
+postgresql_pg_hba_custom:
+   - { type: host,  database: all, user: all, address: "10.0.0.0/8",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
+   - { type: host,  database: all, user: all, address: "192.168.4.0/24",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
+   - { type: host,  database: replication, user: all, address: "192.168.4.0/24",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
+
 postgresql_databases:
    - name: db01
      owner: postgres
@@ -72,32 +80,12 @@ postgresql_user_privileges:
    - name: replicate
      db: db01
      priv: "ALL"
-     role_attr_flags: "CREATEDB"
+     role_attr_flags: "SUPERUSER"
 # flags: "LOGIN,SUPERUSER"
 EOF
 
-cat > /home/vagrant/host_vars/slave1.yaml <<EOF
-postgresql_pg_hba_custom:
-   - { type: host,  database: all, user: all, address: "10.0.0.0/8",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
-   - { type: host,  database: all, user: all, address: "192.168.4.0/24",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
-EOF
-
-cat > /home/vagrant/host_vars/slave2.yaml <<EOF
-postgresql_pg_hba_custom:
-   - { type: host,  database: all, user: all, address: "10.0.0.0/8",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
-   - { type: host,  database: all, user: all, address: "192.168.4.0/24",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
-
-EOF
-
-cat > /home/vagrant/host_vars/slave3.yaml <<EOF
-postgresql_pg_hba_custom:
-   - { type: host,  database: all, user: all, address: "10.0.0.0/8",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
-   - { type: host,  database: all, user: all, address: "192.168.4.0/24",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
-
-EOF
-
-cat > pg-m-s.yaml <<EOF
-- hosts: db
+cat > pg-all.yaml <<EOF
+- hosts: all
   become: yes
   pre_tasks:
    - name: Enabling epel repository
@@ -130,8 +118,9 @@ cat > pg-m-s.yaml <<EOF
      when: hostvars[item].ansible_host is defined
      with_items: "{{ groups.all }}"
      tags: etc_hosts
+
   vars:
-     postgresql_version: 9.6
+     postgresql_version: 10
      postgresql_ext_install_contrib: yes
      postgresql_listen_addresses: "*"
      postgresql_max_connections: 150
@@ -143,7 +132,8 @@ cat > pg-m-s.yaml <<EOF
         - hstore
         - pg_stat_statements
   roles:
-    - role: anxs.postgresql
+    - role: postgresql
+
 EOF
 
 ssh-keygen -q -t rsa -N '' -f ~/.ssh/id_rsa
@@ -157,7 +147,8 @@ echo "vagrant" | sshpass  ssh-copy-id root@192.168.4.3 -f  -o StrictHostKeyCheck
 echo "vagrant" | sshpass  ssh-copy-id root@192.168.4.4 -f  -o StrictHostKeyChecking=no
 echo "vagrant" | sshpass  ssh-copy-id root@192.168.4.5 -f  -o StrictHostKeyChecking=no
 
-cat > pg-m-s.sh << EOF
-ansible-playbook -i inventory pg-m-s.yaml
+cat > pg.sh << EOF
+export ANSIBLE_FORCE_COLOR=true
+ansible-playbook -i inventory pg-all.yaml
 EOF
-sh pg-m-s.sh
+sh pg.sh

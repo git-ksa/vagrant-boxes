@@ -10,18 +10,21 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define "slave1" do |server|
     server.vm.hostname = "slave1.pg"
     server.vm.network "private_network", ip: "192.168.4.3"
+    server.vm.network "forwarded_port", guest: 5432, host: 5433
     server.vm.provision "shell", path: "scripts/slave.sh"
   end
 
   config.vm.define "slave2" do |server|
     server.vm.hostname = "slave2.pg"
     server.vm.network "private_network", ip: "192.168.4.4"
+    server.vm.network "forwarded_port", guest: 5432, host: 5434
     server.vm.provision "shell", path: "scripts/slave.sh"
   end
 
   config.vm.define "slave3" do |server|
     server.vm.hostname = "slave3.pg"
     server.vm.network "private_network", ip: "192.168.4.5"
+    server.vm.network "forwarded_port", guest: 5432, host: 5435
     server.vm.provision "shell", path: "scripts/slave.sh"
   end
 
