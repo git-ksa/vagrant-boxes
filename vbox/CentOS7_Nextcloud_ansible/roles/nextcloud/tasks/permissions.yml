@@ -1,0 +1,60 @@
+---
+# permissions.yml
+
+- name: ensure occ is executable
+  file:
+    path: '{{ nextcloud_web_root }}/occ'
+    mode: a+x
+
+- name: ensure directories exist with correct permissions
+  file:
+    path: '{{ item }}'
+    owner: nginx
+    group: nginx
+    recurse: yes
+    state: directory
+  with_items:
+    - '{{ nextcloud_web_root }}'
+    - '{{ nextcloud_data_root }}'
+
+- name: ensure SELinux file context mapping definitions are correct
+  sefcontext:
+    target: '{{ item  }}'
+    setype: httpd_sys_rw_content_t
+  with_items:
+    - '{{ nextcloud_data_root }}(/.*)?'
+    - '{{ nextcloud_upload_tmp_dir }}(/.*)?'
+    - '{{ nextcloud_web_root }}/config(/.*)?'
+    - '{{ nextcloud_web_root }}/apps(/.*)?'
+    - '{{ nextcloud_web_root }}/.htaccess'
+    - '{{ nextcloud_web_root }}/.user.ini'
+  register: sefcontext
+  when: ansible_selinux and ansible_selinux.status == 'enabled'
+
+- name: run restorecon if SELinux file context was changed
+  command: '{{ item  }}'
+  with_items:
+    - 'restorecon -Rv {{ nextcloud_data_root }}'
+    - 'restorecon -Rv {{ nextcloud_upload_tmp_dir }}'
+    - 'restorecon -Rv {{ nextcloud_web_root }}'
+  when:
+    - ansible_selinux and ansible_selinux.status == 'enabled'
+    - sefcontext.changed
+
+- name: Set selinux policy for fastcgi temp directory
+  sefcontext:
+    target: '{{ nextcloud_fastcgi_temp_dir }}(/.*)?'
+    setype: httpd_cache_t
+    reload: yes
+  when: nextcloud_fastcgi_temp_dir is defined
+
+- name: ensure sebooleans are set
+  seboolean:
+    name: '{{ item }}'
+    state: yes
+    persistent: yes
+  with_items:
+    - 'httpd_can_network_connect'
+    - 'httpd_execmem'
+    - 'daemons_enable_cluster_mode'
+  when: ansible_selinux and ansible_selinux.status == 'enabled'

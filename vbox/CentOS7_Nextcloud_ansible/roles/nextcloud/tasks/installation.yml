@@ -1,0 +1,57 @@
+---
+# installation.yml
+
+- name: installation - ensure nextcloud is unarchived in {{ nextcloud_web_root }}
+  unarchive:
+    src: '{{ nextcloud_repo_url }}/{{ nextcloud_version }}.tar.bz2'
+    extra_opts:
+      - '--strip-components=1'
+      - '--show-stored-names'
+    remote_src: true
+    dest: '{{ nextcloud_web_root }}'
+
+- import_tasks: 'permissions.yml'
+
+- name: installation - ensure nextcloud installation is finished
+  command: >
+    php {{ nextcloud_web_root }}/occ maintenance:install --database "mysql" --database-name "{{ nextcloud_mysql_db }}"
+    --database-user "{{ nextcloud_mysql_user }}" --database-pass "{{ nextcloud_mysql_pw }}"
+    --admin-user "{{ nextcloud_admin_user }}" --admin-pass "{{ nextcloud_admin_pw }}" --data-dir "{{ nextcloud_data_root }}"
+  become: true
+  become_user: nginx
+  changed_when: true
+
+- name: installation - ensure trusted domains are set
+  command: 'php {{ nextcloud_web_root }}/occ config:system:set trusted_domains {{ item.0 }} --value "{{ item.1 }}"'
+  become: true
+  become_user: nginx
+  changed_when: true
+  with_indexed_items:
+    - '{{ nextcloud_trusted_domains  }}'
+
+# performance tuning
+# https://docs.nextcloud.com/server/12/admin_manual/configuration_server/server_tuning.html
+
+- name: performance tuning - configure APCu for local caching
+  command: 'php {{ nextcloud_web_root }}/occ config:system:set memcache.local --value "\OC\Memcache\APCu"'
+  become: true
+  become_user: nginx
+  changed_when: true
+
+- name: performance tuning - connect to redis on unixsocket
+  command: 'php {{ nextcloud_web_root }}/occ config:system:set redis "host" --value "/var/run/redis/redis.sock"'
+  become: true
+  become_user: nginx
+  changed_when: true
+
+- name: performance tuning - connect to redis on unixsocket, set port to 0
+  command: 'php {{ nextcloud_web_root }}/occ config:system:set redis "port" --value 0'
+  become: true
+  become_user: nginx
+  changed_when: true
+
+- name: performance tuning - use redis for file locking
+  command: 'php {{ nextcloud_web_root }}/occ config:system:set memcache.locking --value "\OC\Memcache\Redis"'
+  become: true
+  become_user: nginx
+  changed_when: true

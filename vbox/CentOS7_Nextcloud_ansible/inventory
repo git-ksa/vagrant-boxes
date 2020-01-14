@@ -1,0 +1,11 @@
+# This is example inventory file!
+[all]
+nextcloud  ansible_host=192.168.4.2 # Connection settings
+
+#ansible_connection='ssh'
+#ansible_ssh_port='22'
+#ansible_user='root'
+#ansible_ssh_pass='vagrant'  # "sshpass" package is required for use "ansible_ssh_pass"
+#ansible_ssh_private_key_file=
+# ansible_python_interpreter='/usr/bin/python3'  # is required for use python3
+

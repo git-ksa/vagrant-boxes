@@ -1,0 +1,410 @@
+---
+# task file for rbicker.nextcloud
+
+- name: ensure epel-release and Remi yum repos are installed
+  yum:
+    name:
+      - https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm
+      - https://rpms.remirepo.net/enterprise/remi-release-{{ ansible_distribution_major_version }}.rpm
+    state: present
+  when: nextcloud_manage_yum_repos
+
+- name: add MariaDB repo
+  yum_repository:
+    name: mariadb
+    description: Extra Packages for Enterprise Linux {{ ansible_distribution_major_version }} - $basearch
+    baseurl: http://yum.mariadb.org/{{ mariadb_version }}/centos{{ ansible_distribution_major_version|int }}-amd64
+    gpgkey: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+    gpgcheck: yes
+    enabled: 1
+  when: nextcloud_manage_yum_repos
+
+- name: get all not-used PHP repos
+  shell: |
+    set -o pipefail
+    ls /etc/yum.repos.d/remi-php* | grep -v remi-php{{ php_version | replace(".","") }}
+  register: php_repos
+  when: nextcloud_manage_yum_repos and ansible_distribution_major_version|int <= 7
+  check_mode: false
+  changed_when: no
+
+- name: ensure correct PHP repo is enabled and has the correct priority
+  ini_file:
+    path: /etc/yum.repos.d/remi-php{{ php_version | replace(".","") }}.repo
+    no_extra_spaces: yes
+    section: remi-php{{ php_version | replace(".","") }}
+    option: '{{ item.option }}'
+    value: '{{ item.value }}'
+  when: nextcloud_manage_yum_repos and ansible_distribution_major_version|int <= 7
+  loop:
+    - { option: 'enabled', value: '1' }
+    - { option: 'priority', value: '1' }
+
+- name: ensure all other PHP repos are disabled
+  ini_file:
+    path: "{{ item }}"
+    no_extra_spaces: yes
+    section: "{{ item | regex_search('(remi-php)\\d\\d') }}"
+    option: enabled
+    value: "0"
+  when: nextcloud_manage_yum_repos and ansible_distribution_major_version|int <= 7
+  loop: "{{ php_repos.stdout_lines }}"
+
+- name: ensure deprecated php module is absent
+  yum:
+    name:
+      - php71w-mcrypt
+      - libmcrypt
+    state: absent
+
+- name: enable the module stream for PHP and Redis
+  dnf:
+    name:
+      - "@php:remi-{{ php_version }}"
+      - "@redis:5"
+  changed_when: no
+  when: nextcloud_manage_yum_repos and ansible_distribution_major_version|int >= 8
+
+- name: ensure required packages are installed  # noqa 403
+  yum:
+    name:
+      - crontabs
+      - "{{ ((ansible_facts.distribution_major_version|int) <= 7) | ternary('libselinux-python','python3-libselinux') }}"
+      - "{{ ((ansible_facts.distribution_major_version|int) <= 7) | ternary('policycoreutils-python','python3-policycoreutils') }}"
+      - bzip2
+      - nginx
+      - openssl
+      - "{{ ((ansible_facts.distribution_major_version|int) <= 7) | ternary('MySQL-python','python3-PyMySQL') }}"
+      - redis
+      - logrotate
+      - php
+      - php-fpm
+      - php-opcache
+      - php-common  # ctype, iconv, json, libxml, simplexml, zip, zlib, curl, fileinfo, bz2, openssl, ftp, exif, gmp
+      - php-gd
+      - php-xml  # dom, xmlreader, xmlwriter
+      - php-mbstring
+      - php-intl  # intl
+      - php-mysqlnd
+      - php-ldap
+      - php-imap
+      - php-pecl-apcu
+      - "php-pecl-redis{% if nextcloud_manage_yum_repos %}5{% endif %}"
+      - php-pecl-imagick
+      - php-pecl-zip
+      - php-process  # posix
+      - jq
+      - boost-program-options
+    state: latest
+    enablerepo: "{% if nextcloud_manage_yum_repos %}remi{% else %}{{ omit }}{% endif %}"
+
+- name: Gather installed packages
+  package_facts:
+    manager: "auto"
+
+- name: check whether MariaDB is installed
+  debug:
+    msg: "MariaDB already installed"
+  when: "'MariaDB-server' in ansible_facts.packages or 'mariadb-server' in ansible_facts.packages"
+  register: mariadbresult
+
+- name: set version var
+  set_fact:
+    installed_version: "{% if ansible_facts.packages['MariaDB-server'] is defined %}{{ ansible_facts.packages['MariaDB-server'][0].version }}{% else %}
+      {{ ansible_facts.packages['mariadb-server'][0].version }}{% endif %}"
+  when: "not mariadbresult.skipped is defined"
+
+- name: "MariaDB Notification to upgrade manually"
+  debug:
+    msg: "MariaDB is already installed but on version {{ installed_version }} instead of {{ mariadb_version }}. Please upgrade manually."
+  when: "not mariadbresult.skipped is defined and installed_version|replace(' ', '') is version(mariadb_version, '<')"
+
+- name: ensure MariaDB-server is installed
+  yum:
+    name: MariaDB-server
+    enablerepo: mariadb
+    disablerepo: "{% if ansible_facts.distribution_major_version|int >=8 %}AppStream{% else %}{% endif %}"
+  notify: mysql optimization
+  when: "mariadbresult.skipped is defined"
+
+- name: ensure mysql binary logging is disabled
+  lineinfile:
+    path: /etc/my.cnf.d/server.cnf
+    state: absent
+    regexp: '^log-bin$'
+  notify:
+    - restart mariadb
+
+- name: ensure MariaDB-server is enabled and started
+  service:
+    name: mariadb
+    state: started
+    enabled: yes
+
+- name: ensure the MariaDB root password is set
+  mysql_user:
+    login_user: root
+    name: root
+    password: '{{ mysql_root_pw }}'
+    login_unix_socket: /var/lib/mysql/mysql.sock
+  when: mysql_root_pw_modify
+
+- name: ensure /root/.my.cnf is present
+  template:
+    src: my.cnf.j2
+    dest: /root/.my.cnf
+    owner: root
+    group: root
+    mode: '0600'
+    force: no  # don't overwrite, only create if not exists
+  when: mysql_root_pw_modify
+
+- name: ensure anonymous mysql user is absent
+  mysql_user:
+    name: ''
+    login_user: root
+    host_all: yes
+    state: absent
+
+- name: ensure mysql test database is absent
+  mysql_db:
+    name: test
+    login_user: root
+    state: absent
+
+- name: ensure nextcloud database {{ nextcloud_mysql_db }} exists
+  mysql_db:
+    name: '{{ nextcloud_mysql_db }}'
+    login_user: root
+    state: present
+
+- name: ensure database user {{ nextcloud_mysql_user }} exists and has all privileges on {{ nextcloud_mysql_db }}
+  mysql_user:
+    name: '{{ nextcloud_mysql_user }}'
+    password: '{{ nextcloud_mysql_pw }}'
+    login_user: root
+    priv: '{{ nextcloud_mysql_db }}.*:ALL,GRANT'
+    state: present
+
+- name: ensure php options are set
+  lineinfile:
+    path: /etc/php.ini
+    regexp: '^{{ item.option }}'
+    line: '{{ item.option }} = {{ item.value }}'
+  with_items:
+    - { option: 'expose_php', value: 'Off' }
+    - { option: 'upload_max_filesize', value: '{{ nextcloud_max_upload_size }}' }
+    - { option: 'post_max_size', value: '{{ nextcloud_max_upload_size }}' }
+    - { option: 'max_input_time', value: '{{ nextcloud_max_upload_time }}' }
+    - { option: 'max_execution_time', value: '{{ nextcloud_max_upload_time }}' }
+    - { option: 'upload_tmp_dir', value: '{{ nextcloud_upload_tmp_dir }}' }
+    - { option: 'memory_limit', value: '{{ nextcloud_php_memory_limit }}' }
+    - { option: 'apc.enable_cli', value: '1' }
+  notify:
+    - reload php-fpm
+    - reload nginx
+
+- name: ensure pdo_mysql.ini config is present
+  copy:
+    src: pdo_mysql.ini
+    dest: /etc/php.d/30-pdo_mysql.ini
+
+- name: ensure redis options are set
+  lineinfile:
+    path: /etc/redis.conf
+    regexp: '^{{ item.option }}\s'
+    line: '{{ item.option }} {{ item.value }}'
+  with_items:
+    - { option: 'unixsocket', value: '/var/run/redis/redis.sock' }
+    - { option: 'unixsocketperm', value: '770' }
+  notify:
+    - restart redis
+
+- name: ensure nginx user is in group redis
+  user:
+    name: nginx
+    append: yes
+    groups: redis
+
+- name: ensure upload_tmp_dir directory is present
+  file:
+    path: '{{ nextcloud_upload_tmp_dir }}'
+    owner: nginx
+    group: nginx
+    state: directory
+
+- name: ensure nextcloud_fastcgi_temp_dir directory exists and has nginx as owner
+  file:
+    path: '{{ nextcloud_fastcgi_temp_dir }}'
+    owner: nginx
+    group: nginx
+    state: directory
+  when: nextcloud_fastcgi_temp_dir is defined
+
+- name: ensure directory for php sessions exists and has nginx as owner
+  file:
+    path: /var/lib/php/session
+    owner: nginx
+    group: nginx
+    state: directory
+
+- name: ensure directories for php cache exist and have correct permissions
+  file:
+    path: /var/lib/php/{{ item }}
+    owner: root
+    group: nginx
+    state: directory
+  loop:
+    - wsdlcache
+    - opcache
+
+- name: ensure log directory for nextcloud exists and has nginx as owner
+  file:
+    path: /var/log/nextcloud
+    owner: nginx
+    group: nginx
+    state: directory
+
+- name: ensure /etc/nginx/nginx.conf is present
+  copy:
+    src: nginx.conf
+    dest: /etc/nginx/nginx.conf
+  notify:
+    - reload nginx
+  tags:
+    - nginx_config
+
+- name: ensure default site nginx config is absent
+  file:
+    path: /etc/nginx/conf.d/default.conf
+    state: absent
+  tags:
+    - nginx_config
+
+- name: ensure nextcloud.conf nginx config is present
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/conf.d/nextcloud.conf
+  notify:
+    - reload nginx
+  tags:
+    - nginx_config
+
+- name: ensure nextcloud logrotate is present
+  copy:
+    src: nextcloud
+    dest: /etc/logrotate.d/nextcloud
+
+- name: ensure ssl key and cert are present
+  command: >
+    openssl req -new -nodes -x509 -subj {{ nextcloud_ssl_subject }}
+    -days 3650 -keyout {{ nextcloud_ssl_key }} -out {{ nextcloud_ssl_cert }}
+    -extensions v3_ca
+  args:
+    creates: '{{ nextcloud_ssl_cert }}'
+  notify:
+    - reload nginx
+  when: nextcloud_use_https and not nextcloud_ssl_skip_gen
+
+- name: ensure php-fpm www.conf settings are correct
+  lineinfile:
+    path: /etc/php-fpm.d/www.conf
+    regexp: '^;?{{ item.name }}\s*='
+    line: '{{ item.name }} = {{ item.value }}'
+  with_items:
+    - { name: user, value: nginx }
+    - { name: group, value: nginx }
+    - { name: clear_env, value: 'no' }
+    - { name: listen, value: '127.0.0.1:9000' }
+  notify: reload php-fpm
+
+- name: ensure opcache settings are correct
+  lineinfile:
+    path: /etc/php.d/10-opcache.ini
+    regexp: '^{{ item.name }}\s*='
+    line: '{{ item.name }}={{ item.value }}'
+  with_items:
+    - { name: opcache.enable, value: 1 }
+    - { name: opcache.enable_cli, value: 1 }
+    - { name: opcache.interned_strings_buffer, value: 8 }
+    - { name: opcache.max_accelerated_files, value: 10000 }
+    - { name: opcache.memory_consumption, value: 128 }
+    - { name: opcache.save_comments, value: 1 }
+    - { name: opcache.revalidate_freq, value: 1 }
+  notify: restart php-fpm
+
+- name: ensure nginx is allowed to listen on nextcloud ports
+  seport:
+    ports: "{{ item }} "
+    proto: tcp
+    setype: http_port_t
+    state: present
+  with_items:
+    - "{{ nextcloud_http_port }}"
+    - "{{ nextcloud_https_port }}"
+  when: ansible_selinux and ansible_selinux.status == 'enabled'
+
+- name: ensure nginx, php-fpm and redis are enabled and running
+  service:
+    name: '{{ item }}'
+    state: started
+    enabled: yes
+  with_items:
+    - php-fpm
+    - nginx
+    - redis
+
+- name: ensure alias for the occ command exists in /root/.bashrc
+  lineinfile:
+    name: /root/.bashrc
+    line: "alias occ='sudo -u nginx {{ nextcloud_web_root }}/occ'"
+
+- name: ensure {{ nextcloud_web_root }} is present
+  file:
+    name: '{{ nextcloud_web_root }}'
+    state: directory
+  register: new_installation
+
+- import_tasks: 'installation.yml'
+  when: new_installation.changed
+  tags:
+    - always
+
+- import_tasks: 'upgrade.yml'
+  when: nextcloud_upgrade
+  tags:
+    - always
+
+# call filesystem checks if not done by previous tasks
+- import_tasks: permissions.yml
+  when: not new_installation.changed and not nextcloud_upgrade
+  tags:
+    - permissions
+
+- name: performance tuning - ensure the nextcloud cronjob exists and runs every 5 min
+  cron:
+    name: nextcloud
+    minute: "*/5"
+    user: nginx
+    job: 'php -f {{ nextcloud_web_root | quote }}/cron.php'
+
+- name: performance tuning - ensure Nextcloud uses cron
+  command: 'php {{ nextcloud_web_root }}/occ background:cron'
+  become: true
+  become_user: nginx
+  changed_when: no
+
+- name: performance tuning - set logrotate location
+  command: 'php {{ nextcloud_web_root }}/occ config:system:set logfile --value "/var/log/nextcloud/nextcloud.log"'
+  become: true
+  become_user: nginx
+  changed_when: no
+
+- name: ensure additional options are set in config.php if defined
+  lineinfile:
+    path: '{{ nextcloud_web_root }}/config/config.php'
+    regexp: '^\s*''{{ item.option }}'''
+    line: '  ''{{ item.option }}'' => {{ item.value }},'
+    insertafter: '\$CONFIG'
+  with_items: '{{ nextcloud_config_options }}'
+  when: nextcloud_config_options is defined
