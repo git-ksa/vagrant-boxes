@@ -1,0 +1,1 @@
+external_url "https://example.com/gitlab"
