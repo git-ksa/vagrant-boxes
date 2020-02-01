@@ -31,3 +31,4 @@ netstat -pan | grep -i 443
 lxc-ls --fancy
 grep keystone_auth_admin_password /etc/openstack_deploy/user_secrets.yml
 #https://localhost:443
+
