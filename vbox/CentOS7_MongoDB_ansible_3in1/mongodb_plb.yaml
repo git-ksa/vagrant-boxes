@@ -1,4 +1,0 @@
-- hosts: all
-  roles:
-      - ansible-role-mongodb
-#from https://github.com/UnderGreen/ansible-role-mongodb
