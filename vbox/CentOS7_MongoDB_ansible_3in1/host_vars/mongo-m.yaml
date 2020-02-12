@@ -1,0 +1,35 @@
+mongodb_version: "3.4"
+mongodb_storage_dbpath: /u01/data                 # Directory for datafiles
+mongodb_net_bindip: 0.0.0.0
+# default 65535 overhead !!!!! (c) ksa
+mongodb_net_maxconns: 100                      # Max number of simultaneous connections
+
+mongodb_user_admin_name: siteUserAdmin
+mongodb_user_admin_password: rootroot
+
+mongodb_root_admin_name: siteRootAdmin
+mongodb_root_admin_password: rootroot
+
+mongodb_root_backup_name: backupuser
+mongodb_root_backup_password: rootroot
+
+#mongodb_security_authorization: "enabled"
+#mongodb_users:
+#  - {
+#    name: testUser,
+#    password: passw0rd,
+#    roles: readWrite,
+#    database: app_development
+#}
+
+# It's a 'master' node
+#mongodb_login_host: 192.168.56.2
+
+# mongodb_replication_params should be configured on each replica set node
+#mongodb_replication_params:
+#  - {
+#      host_name: 192.168.56.2,
+#      host_port: "{{ mongodb_net_port }}",
+#      host_type: replica,
+#    }
+# host_type can be replica(default) and arbiter

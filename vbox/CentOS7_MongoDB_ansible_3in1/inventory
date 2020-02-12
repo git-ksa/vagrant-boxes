@@ -1,0 +1,7 @@
+[all]
+mongo-m   ansible_host=192.168.4.2 # Connection settings
+[slaves]
+mongo-s1  ansible_host=192.168.4.3 # Connection settings
+mongo-s2  ansible_host=192.168.4.4 # Connection settings
+
+
