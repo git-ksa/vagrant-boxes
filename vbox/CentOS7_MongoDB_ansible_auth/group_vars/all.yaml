@@ -1,0 +1,11 @@
+mongodb_version: "3.4"
+mongodb_storage_dbpath: /u01/data            # Directory for datafiles
+mongodb_net_bindip: 0.0.0.0
+mongodb_net_maxconns: 100                    # Max number of simultaneous connections
+
+#mongodb_login_host: "{{ hostvars[groups['mastergroup'][0]].ansible_default_ipv4.address }}"
+mongodb_login_host: 192.168.4.2
+
+# replication
+mongodb_replication_replset: testrs
+mongodb_security_authorization: enabled
