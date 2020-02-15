@@ -9,3 +9,13 @@ mongodb_login_host: 192.168.4.2
 # replication
 mongodb_replication_replset: testrs
 mongodb_security_authorization: enabled
+
+# names and passwords for administrative users
+mongodb_user_admin_name: siteUserAdmin
+mongodb_user_admin_password: passw0rd
+
+mongodb_root_admin_name: siteRootAdmin
+mongodb_root_admin_password: passw0rd
+
+mongodb_root_backup_name: backupuser
+mongodb_root_backup_password: passw0rd
