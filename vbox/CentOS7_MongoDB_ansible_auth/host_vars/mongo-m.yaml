@@ -1,7 +1,10 @@
 mongodb_master: True
 mongodb_replication_params:
 #  - host_name: "{{ hostvars[inventory_hostname].ansible_default_ipv4.address }}"
-  - host_name: 192.168.4.2
+  - {
+      host_name: 192.168.4.2,
+      priority: 1
+    }
 
 mongodb_users:
   - {
