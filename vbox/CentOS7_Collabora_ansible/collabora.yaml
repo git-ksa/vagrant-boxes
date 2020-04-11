@@ -1,0 +1,4 @@
+- hosts: all
+  roles:
+      - role: collabora
+        collabora_terminate_ssl: true

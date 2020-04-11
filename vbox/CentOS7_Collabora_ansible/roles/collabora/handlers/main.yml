@@ -1,0 +1,12 @@
+---
+# handlers file for uniqconsulting.collabora
+
+- name: restart nginx
+  systemd:
+    name: nginx
+    state: restarted
+
+- name: restart loolwsd
+  systemd:
+    name: loolwsd
+    state: restarted

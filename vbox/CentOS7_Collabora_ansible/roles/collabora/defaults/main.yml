@@ -1,0 +1,27 @@
+---
+# uniqconsulting.collabora role defaults/main.yml
+# NOTE: this defaults are set for setting up collabora on same host as nextcloud
+
+# admin interface settings
+collabora_admin_enable: false
+collabora_admin_user: admin
+collabora_admin_password: 'nevermind!'
+
+# define if collabora should terminate with ssl or plain
+collabora_terminate_ssl: false
+
+# somethimes collabora CODE packages are not signed
+collabora_yum_gpgcheck: yes
+
+
+# install ngingx reverse proxy on top of collabora
+collabora_nginx_setup: false
+collabora_nginx_ssl_cert_days: 3650
+collabora_nginx_ssl_cert_host: "{{ansible_fqdn}}"
+collabora_nginx_ssl_cert_port: 8443
+collabora_nginx_ssl_cert_dir: /etc/nginx
+collabora_nginx_ssl_cert_key: "{{collabora_nginx_ssl_cert_dir}}/collabora_key.pem"
+collabora_nginx_ssl_cert_crt: "{{collabora_nginx_ssl_cert_dir}}/collabora_crt.pem"
+collabora_nginx_ssl_cert_chain: "{{collabora_nginx_ssl_cert_dir}}/collabora_ca_chain.pem"
+
+...

@@ -1,0 +1,63 @@
+# uniqconsulting.collabora/tasks/configure.yml
+---
+
+- name: enable collabora admin account
+  xml: 
+    path: /etc/loolwsd/loolwsd.xml
+    xpath: /config/admin_console/enable
+    value: "true"
+  when: collabora_admin_enable
+- name: disable collabora admin account
+  xml: 
+    path: /etc/loolwsd/loolwsd.xml
+    xpath: /config/admin_console/enable
+    value: "false"
+  when: not collabora_admin_enable
+
+- name: set admin credentials
+  block:
+    - name: set collabora admin user
+      xml: 
+        path: /etc/loolwsd/loolwsd.xml
+        xpath: /config/admin_console/username
+        value: "{{ collabora_admin_user }}"
+    - name: set collabora admin user
+      xml: 
+        path: /etc/loolwsd/loolwsd.xml
+        xpath: /config/admin_console/password
+        value: "{{ collabora_admin_password }}"
+  when: collabora_admin_enable
+
+- name: enable ssl configuration
+  xml: 
+    path: /etc/loolwsd/loolwsd.xml
+    xpath: /config/ssl/enable
+    value: "true"
+  when: collabora_terminate_ssl
+- name: disable ssl configuration
+  xml: 
+    path: /etc/loolwsd/loolwsd.xml
+    xpath: /config/ssl/enable
+    value: "false"
+  when: not collabora_terminate_ssl
+- name: configure ssl termination/offloading
+  xml: 
+    path: /etc/loolwsd/loolwsd.xml
+    xpath: /config/ssl/termination
+    value: "true"
+- name: search public fqdn for the allowed list of hosts
+  xml:
+    path: /etc/loolwsd/loolwsd.xml
+    xpath: /config/storage/wopi/host
+    content: text
+  register: wopi_host
+
+- name: add public fqdn to the allowed list of hosts
+  xml: 
+    path: /etc/loolwsd/loolwsd.xml
+    xpath: /config/storage/wopi
+    add_children: '<host desc="Ansible Regex pattern of hostname to allow." allow="true">{{ collabora_nginx_ssl_cert_host }}</host>'
+    input_type: xml
+    pretty_print: yes
+  when: "collabora_nginx_ssl_cert_host not in wopi_host.matches[-1]|string"
+...

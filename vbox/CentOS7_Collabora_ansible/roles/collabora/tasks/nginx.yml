@@ -1,0 +1,56 @@
+# uniqconsulting.collabora/tasks/nginx.yml
+---
+- name: Install necessary packages for nginx
+  yum:
+    name: '{{ item.package }}'
+    state: present
+  with_items: "{{ nginx_packages_EL }}"
+
+- block:
+  - name: copy selfsigned ssl cert creator script
+    template:
+      src: create-collabora-cert.sh.j2
+      dest: /usr/local/sbin/create-collabora-cert.sh
+      owner: root
+      group: root
+      mode: 0700
+
+  - name: create/update self signed cert
+    shell: /usr/local/sbin/create-collabora-cert.sh
+    changed_when: False
+    args:
+      warn: false
+
+- name: create/update nginx ssl config for collabora
+  template:
+    src: collabora_ssl.conf.j2
+    dest: /etc/nginx/conf.d/collabora_ssl.conf
+    owner: root
+    group: nginx
+    mode: 0640
+  notify: restart nginx
+
+- name: install firewalld
+  yum:
+    name: firewalld
+    state: present
+
+- name: start firewalld
+  service:
+    name: firewalld
+    enabled: yes
+    state: started
+
+- name: open 8443 port on firewalld
+  firewalld:
+    port: 8443/tcp
+    permanent: true
+    immediate: true
+    state: enabled
+
+- name: enable firewalld
+  service:
+    name: firewalld
+    enabled: yes
+    state: started
+...

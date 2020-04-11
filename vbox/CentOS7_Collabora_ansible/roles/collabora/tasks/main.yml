@@ -1,0 +1,15 @@
+# uniqconsulting.collabora/tasks/main.yml
+---
+- import_tasks: include-vars.yml
+
+- include_tasks: install.yml
+  tags: [install]
+
+- include_tasks: configure.yml
+  tags: [configure]
+
+- name: setup nginx
+  include_tasks: nginx.yml
+  tags: [configure]
+  when: collabora_nginx_setup
+...

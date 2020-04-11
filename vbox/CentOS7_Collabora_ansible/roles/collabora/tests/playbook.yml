@@ -1,0 +1,8 @@
+# uniqconsulting.collabora/test/playbook.yml
+---
+- name: Install and configure Collabora CODE
+  hosts: vm21
+  roles:
+    - role: uniqconsulting.collabora
+      collabora_nginx_ssl_cert_host: co.domain.com
+...

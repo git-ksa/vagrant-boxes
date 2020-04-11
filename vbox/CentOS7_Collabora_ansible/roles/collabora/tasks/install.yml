@@ -1,0 +1,44 @@
+# uniqconsulting.collabora/tasks/install.yml
+---
+- name: Install collabora CODE repo
+  yum_repository:
+    name: collabora-CODE
+    description: collabora CODE repo
+    baseurl: https://www.collaboraoffice.com/repos/CollaboraOnline/CODE-centos7
+    gpgkey: https://www.collaboraoffice.com/repos/CollaboraOnline/CODE-centos7/repodata/repomd.xml.key 
+    gpgcheck: "{{ collabora_yum_gpgcheck }}" 
+
+- name: Install nginx packages
+  yum:
+    name: '{{ item.package }}'
+    state: present
+  with_items: "{{ nginx_packages_EL }}"
+  when: collabora_nginx_setup
+
+- name: Install collabora CODE packages
+  yum:
+    name: '{{ item.package }}'
+    state: present
+  with_items: "{{ collabora_packages_EL }}"
+
+- name: setup new certs if ssl is enabled
+  block:
+    - name: copy internal selfsigned ssl cert creator script
+      template:
+        src: create-collabora-internal-cert.sh.j2
+        dest: /usr/local/sbin/create-collabora-internal-cert.sh
+        owner: root
+        group: root
+        mode: 0700
+
+    - name: create/update internal self signed cert
+      shell: /usr/local/sbin/create-collabora-internal-cert.sh
+      changed_when: False
+  when: collabora_terminate_ssl
+
+- name: enable loolwsd service
+  service:
+    name: loolwsd
+    state: started
+    enabled: yes
+...

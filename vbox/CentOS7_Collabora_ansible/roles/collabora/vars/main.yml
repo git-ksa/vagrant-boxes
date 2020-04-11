@@ -1,0 +1,12 @@
+# vars/main.yml from uniqconsulting.collabora
+---
+collabora_packages_EL:
+  - {package: "python-lxml"}
+  - {package: "loolwsd"}
+  - {package: "CODE-brand"}
+
+nginx_packages_EL:
+  - {package: "nginx"}
+  - {package: "openssl"}
+
+...
