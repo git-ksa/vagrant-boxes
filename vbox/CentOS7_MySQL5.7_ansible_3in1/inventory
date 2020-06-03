@@ -1,0 +1,7 @@
+[all]
+my1  ansible_host=192.168.4.2
+[slaves]
+my2  ansible_host=192.168.4.3
+my3  ansible_host=192.168.4.4
+
+

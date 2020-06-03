@@ -1,0 +1,14 @@
+mysql_server_id: "3"
+mysql_replication_role: 'slave'
+mysql_replication_user:
+  name: "repluser"
+  password: "ZB1C6(RxS-0"
+mysql_users:
+  - name: user
+    host: "%"
+    password: ZB1C6(RxS-0
+    priv: "*.*:ALL"
+  - name: repluser
+    host: "%"
+    password: ZB1C6(RxS-0
+    priv: "*.*:ALL"

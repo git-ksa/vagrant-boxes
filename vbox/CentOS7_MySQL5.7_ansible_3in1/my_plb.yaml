@@ -1,0 +1,13 @@
+- hosts: all
+  become: yes
+  any_errors_fatal: true
+
+  pre_tasks:
+    - name: Install the MySQL repo.
+      yum:
+         name: http://dev.mysql.com/get/mysql57-community-release-el7-8.noarch.rpm 
+         state: present
+
+  roles:
+    - role: mysql
+

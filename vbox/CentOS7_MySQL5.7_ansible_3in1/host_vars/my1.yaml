@@ -1,0 +1,20 @@
+mysql_databases:
+  - name: example_db
+mysql_users:
+  - name: user
+    host: "%"
+    password: ZB1C6(RxS-0
+    priv: "*.*:ALL"
+  - name: repluser
+    host: "%"
+    password: ZB1C6(RxS-0
+    priv: "*.*:ALL"
+
+mysql_server_id: "1"
+mysql_max_binlog_size: "100M"
+mysql_binlog_format: "ROW"
+mysql_expire_logs_days: "10"
+mysql_replication_role: 'master'
+mysql_replication_user:
+  name: "repluser"
+  password: "ZB1C6(RxS-0"
