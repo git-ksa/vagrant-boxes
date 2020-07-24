@@ -33,12 +33,35 @@ cat > my_plb.yaml <<EOF
   become: yes
   any_errors_fatal: true
 
+  pre_tasks:
+    - name: Install the MySQL repo.
+      yum:
+         name: http://dev.mysql.com/get/mysql57-community-release-el7-8.noarch.rpm 
+         state: present
+
   roles:
     - role: mysql
 
 # Set this to `true` to forcibly update the root password.
       mysql_user_password_update: true
       mysql_root_password_update: true
+      mysql_enabled_on_startup: true
+      mysql_user_password: ZB1C6(RxS-0
+      mysql_root_password: ZB1C6(RxS-0
+      mysql_datadir: /u01/mysql
+      mysql_daemon: mysqld
+      mysql_packages: ['mysql-server','MySQL-python'] 
+      mysql_log_error: /var/log/mysqld.log
+      mysql_syslog_tag: mysqld
+      mysql_pid_file: /var/run/mysqld/mysqld.pid
+      mysql_socket: /var/lib/mysql/mysql.sock
+      mysql_databases:
+        - name: example_db
+      mysql_users:
+        - name: user
+          host: "%"
+          password: ZB1C6(RxS-0
+          priv: "*.*:ALL"
       tags:
         - mysql
 EOF
@@ -50,7 +73,7 @@ EOF
 
 sh my.sh
 
-service mariadb status
+service mysqld status
 
 #CREATE USER 'user'@'%' IDENTIFIED BY 'password';
 #GRANT ALL PRIVILEGES ON *.* TO 'user'@'%' WITH GRANT OPTION;
