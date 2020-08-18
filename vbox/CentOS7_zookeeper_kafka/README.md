@@ -77,7 +77,9 @@ You can close the zookeeper shell by simply pressing Ctrl-C.
 
 ### Kafka
 
-```/opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test```
-```/opt/kafka/bin/kafka-topics.sh --zookeeper localhost:2181 --describe --topic test```
-```/opt/kafka/bin/kafka-console-producer.sh --broker-list 10.30.3.2:9092 --topic test```
-```/opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server 10.30.3.2:9092 --topic test --from-beginning```
+```
+/opt/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test
+/opt/kafka/bin/kafka-topics.sh --zookeeper localhost:2181 --describe --topic test
+/opt/kafka/bin/kafka-console-producer.sh --broker-list 10.30.3.2:9092 --topic test
+/opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server 10.30.3.2:9092 --topic test --from-beginning
+```
