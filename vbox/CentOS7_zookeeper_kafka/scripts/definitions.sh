@@ -1,0 +1,21 @@
+KAFKA_VERSION="2.6.0"
+SCALA_VERSION="2.12"
+KAFKA_NAME="kafka_${SCALA_VERSION}-${KAFKA_VERSION}"
+KAFKA_SRCURL="http://apache.claz.org/kafka/${KAFKA_VERSION}/${KAFKA_NAME}.tgz"
+KAFKA_HOME=/opt/kafka
+KAFKA_PWD=kafka
+KAFKA_HEAP_OPTS="-Xmx512m -Xms512M"
+ZOOKEEPER_VERSION="3.6.1"
+ZOOKEEPER_NAME="zookeeper-${ZOOKEEPER_VERSION}"
+ZOOKEEPER_SRCURL="http://ftp.fau.de/apache/zookeeper/${ZOOKEEPER_NAME}/apache-${ZOOKEEPER_NAME}-bin.tar.gz"
+ZOOKEEPER_HOME=/opt/zookeeper
+ZOOKEEPER_PWD=zookeeper
+JDK_VERSION="jdk-14.0.2_linux-x64_bin"
+JDK_RPM="$JDK_VERSION.rpm"
+JDK_SRCURL="https://download.oracle.com/otn-pub/java/jdk/14.0.2+12/205943a0976c4ed48cb16f1043c5c647/${JDK_RPM}"
+SETUP_LOG=/vagrant/setup.log
+SETUP_PKGS=/vagrant/pkg
+SETUP_SCRIPTS=/vagrant/scripts
+BROKER_LIST="10.30.3.10:9092,10.30.3.20:9092,10.30.3.30:9092"
+ZK_LIST="10.30.3.2:2181,10.30.3.3:2181,10.30.3.4:2181"
+export BROKER_LIST ZK_LIST KAFKA_HEAP_OPTS
