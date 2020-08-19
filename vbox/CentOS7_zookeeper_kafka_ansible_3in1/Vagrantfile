@@ -1,0 +1,45 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "centos/7"
+
+  config.vm.define "brk2" do |server|
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 2048
+    v.cpus = 2
+  end
+
+    server.vm.network "private_network", ip: "192.168.4.3"
+    server.vm.network "forwarded_port", guest: 9092, host: 9093
+   server.vm.provision "shell", path: "scripts/second.sh"
+  end
+
+  config.vm.define "brk3" do |server|
+    server.vm.hostname = "brk3"
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 2048
+    v.cpus = 2
+  end
+
+    server.vm.network "private_network", ip: "192.168.4.4"
+    server.vm.network "forwarded_port", guest: 9092, host: 9094
+    server.vm.provision "shell", path: "scripts/second.sh"
+  end
+
+  config.vm.define "brk1", primary: true do |server|
+    server.vm.hostname = "brk1"
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 2048
+    v.cpus = 2
+  end
+
+    server.vm.network "private_network", ip: "192.168.4.2"
+    server.vm.network "forwarded_port", guest: 9092, host: 9092
+    server.vm.network "forwarded_port", guest: 2181, host: 2181
+    server.vm.provision "shell", path: "scripts/first.sh"
+  end
+
+end

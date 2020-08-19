@@ -1,0 +1,8 @@
+[all]
+brk1  ansible_host=192.168.4.2
+brk2  ansible_host=192.168.4.3
+brk3  ansible_host=192.168.4.4
+[zookeeper]
+brk1  ansible_host=192.168.4.2 zookeeper_id=0
+brk2  ansible_host=192.168.4.3 zookeeper_id=1
+brk3  ansible_host=192.168.4.4 zookeeper_id=2

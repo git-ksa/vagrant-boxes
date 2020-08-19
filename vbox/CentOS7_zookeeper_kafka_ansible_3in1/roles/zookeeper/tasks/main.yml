@@ -1,0 +1,119 @@
+---
+- name: Include OS family specific variables
+  include_vars: "{{ ansible_os_family }}.yml"
+
+- name: Include OS specific tasks
+  include_tasks: "{{ ansible_os_family }}.yml"
+
+- name: Create the zookeeper group
+  group:
+    name: "{{ zookeeper_service_group }}"
+    state: present
+    system: true
+
+- name: Create the zookeeper user
+  user:
+    name: "{{ zookeeper_service_username }}"
+    groups: "{{ zookeeper_service_group }}"
+    append: true
+
+- name: Install Java packages
+  package:
+    name: "{{ item }}"
+  with_items: "{{ zookeeper_java_package[zookeeper_java_version|string] }}"
+  when: zookeeper_java_install
+  retries: 5
+  delay: 5
+
+#
+# Install Zookeeper
+#
+- name: Check if the version of Zookeeper already exists
+  stat:
+    path: "/opt/zookeeper-{{ zookeeper_version }}"
+  register: zookeeper_path
+
+- name: Download Zookeeper
+  get_url:
+    url: "{{ zookeeper_download_url }}"
+    dest: "/tmp/zookeeper-{{ zookeeper_version }}.tar.gz"
+  when: not zookeeper_path.stat.exists
+  retries: 5
+  delay: 5
+
+- name: Create the Zookeeper extract directory
+  file:
+    path: "/opt/zookeeper-{{ zookeeper_version }}"
+    state: directory
+    owner: "{{ zookeeper_service_username }}"
+    group: "{{ zookeeper_service_group }}"
+    mode: '0755'
+  when: not zookeeper_path.stat.exists
+
+- name: Extract Zookeeper
+  unarchive:
+    src: "/tmp/zookeeper-{{ zookeeper_version }}.tar.gz"
+    dest: "/opt/zookeeper-{{ zookeeper_version }}"
+    copy: false
+    owner: "{{ zookeeper_service_username }}"
+    group: "{{ zookeeper_service_group }}"
+    extra_opts:
+      - --strip-components=1
+  when: not zookeeper_path.stat.exists
+
+- name: Create a symlink for /opt/zookeeper
+  file:
+    src: "/opt/zookeeper-{{ zookeeper_version }}"
+    dest: /opt/zookeeper
+    owner: "{{ zookeeper_service_username }}"
+    group: "{{ zookeeper_service_group }}"
+    state: link
+  when: not zookeeper_path.stat.exists
+
+- name: Create the Zookeeper config file
+  template:
+    src: zoo.cfg.j2
+    dest: /opt/zookeeper/conf/zoo.cfg
+    owner: "{{ zookeeper_service_username }}"
+    group: "{{ zookeeper_service_group }}"
+    mode: 0644
+  notify: restart zookeeper
+
+- name: Create the Zookeeper data dir
+  file:
+    path: "{{ zookeeper_data_dir }}"
+    state: directory
+    owner: "{{ zookeeper_service_username }}"
+    group: "{{ zookeeper_service_group }}"
+    mode: 0755
+
+- name: Create the Zookeeper the myid file
+  template:
+    src: myid.j2
+    dest: "{{ zookeeper_data_dir }}/myid"
+    owner: "{{ zookeeper_service_username }}"
+    group: "{{ zookeeper_service_group }}"
+    mode: 0644
+  notify: restart zookeeper
+
+- name: Create the Zookeeper systemd environment file
+  template:
+    src: zookeeper.defaults.j2
+    dest: "{{ zookeeper_environment_filename }}"
+    owner: "{{ zookeeper_service_username }}"
+    group: "{{ zookeeper_service_group }}"
+    mode: 0644
+
+- name: Create the Zookeeper systemd service file
+  template:
+    src: zookeeper.service.j2
+    dest: /etc/systemd/system/zookeeper.service
+    owner: "{{ zookeeper_service_username }}"
+    group: "{{ zookeeper_service_group }}"
+    mode: 0644
+
+- name: Ensure Zookeeper is started and enabled on boot
+  service:
+    name: zookeeper
+    state: started
+    enabled: true

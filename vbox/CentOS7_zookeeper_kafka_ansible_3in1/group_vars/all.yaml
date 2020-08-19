@@ -1,0 +1,19 @@
+---
+kafka_hosts: 
+   - 192.168.4.2
+   - 192.168.4.3
+   - 192.168.4.4
+
+zookeeper_ansible_host_group: zookeeper # inventory group name
+
+kafka_zookeeper_hosts:
+   - 192.168.4.2
+   - 192.168.4.3
+   - 192.168.4.4
+
+zookeeper_version: 3.6.1
+#zookeeper_server_variable: facter_ipaddress #ip adress of host
+
+kafka_version: 2.6.0        # Kafka version override.
+kafka_scala_version: 2.12 # Scala version override.
+
