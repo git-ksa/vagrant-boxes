@@ -75,7 +75,7 @@ kafka_server_defaults:
   num_io_threads: 8
   background_threads:
   queued_max_requests:
-  host_name: localhost
+  host_name: "{{ ansible_host }}"
   advertised_host_name:
   advertised_port:
   advertised_listeners:

@@ -112,6 +112,14 @@
     group: "{{ zookeeper_service_group }}"
     mode: 0644
 
+- name: Create the Zookeeper log dir
+  file:
+    path: "{{ zookeeper_log_dir }}"
+    state: directory
+    owner: "{{ zookeeper_service_username }}"
+    group: "{{ zookeeper_service_group }}"
+    mode: 0755
+
 - name: Ensure Zookeeper is started and enabled on boot
   service:
     name: zookeeper

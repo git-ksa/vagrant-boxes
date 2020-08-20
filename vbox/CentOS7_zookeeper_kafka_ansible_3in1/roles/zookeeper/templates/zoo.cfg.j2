@@ -28,3 +28,4 @@ maxClientCnxns={{ zookeeper_max_client_cnxns }}
 # Host {{ host }}
 server.{{ hostvars[host].zookeeper_id }}={{ hostvars[host][zookeeper_server_variable] }}:{{ zookeeper_leader_port|default('2888') }}:{{ zookeeper_election_port|default('3888') }}
 {% endfor %}
+
