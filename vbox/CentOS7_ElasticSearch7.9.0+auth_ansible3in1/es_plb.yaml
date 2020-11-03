@@ -1,0 +1,4 @@
+- hosts: all
+  roles:
+      - elasticsearch
+#from https://github.com/UnderGreen/ansible-role-mongodb
