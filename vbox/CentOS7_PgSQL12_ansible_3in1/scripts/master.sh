@@ -41,4 +41,5 @@ EOF
 sh pg.sh
 # check version and replication
 su -l postgres -c "psql --version"
+sleep 10
 su -l postgres -c "psql -c \"SELECT pid,usesysid,usename,client_addr,client_port,backend_start,state,sync_priority,sync_state FROM pg_stat_replication;\""
