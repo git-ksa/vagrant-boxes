@@ -9,4 +9,5 @@
   become: yes
   become_user: postgres
   register: is_slave
-  ignore_errors: yes
+  changed_when: false
+#  ignore_errors: yes
