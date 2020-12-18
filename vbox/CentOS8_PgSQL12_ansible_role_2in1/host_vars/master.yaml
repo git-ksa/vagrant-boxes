@@ -1,0 +1,33 @@
+#prepare for standby
+postgresql_wal_level: hot_standby
+postgresql_wal_log_hints: on
+postgresql_max_replication_slots: 16
+postgresql_max_wal_senders: 8
+postgresql_wal_keep_segments: 64
+postgresql_hot_standby: on
+postgresql_users:
+   - name: replicate
+     pass: 3kZdcpUqRUGr5Ue9iaje
+   - name: postgres
+     pass: 3kZdcpUqRUGr5Ue9iaje
+
+postgresql_pg_hba_custom:
+   - { type: host,  database: all, user: all, address: "10.0.0.0/8",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
+   - { type: host,  database: all, user: all, address: "192.168.4.0/24",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
+   - { type: host,  database: replication, user: all, address: "192.168.4.0/24",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
+
+postgresql_databases:
+   - name: db01
+     owner: postgres
+
+postgresql_database_extensions:
+  - db: db01
+    extensions:
+       - pg_stat_statements
+
+postgresql_user_privileges:
+   - name: replicate
+     db: db01
+     priv: "ALL"
+     role_attr_flags: "SUPERUSER"
+# flags: "LOGIN,SUPERUSER"

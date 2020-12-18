@@ -1,0 +1,8 @@
+      postgresql_is_slave: "yes"
+      postgresql_masterip: master
+
+      postgresql_masterpass: 3kZdcpUqRUGr5Ue9iaje
+      postgresql_max_replication_slots: 16
+      postgresql_pg_hba_custom:
+         - { type: host,  database: all, user: all, address: "10.0.0.0/8",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }
+         - { type: host,  database: all, user: all, address: "192.168.4.0/24",   method: "{{ postgresql_default_auth_method_hosts }}", comment: "Enable external connections:" }

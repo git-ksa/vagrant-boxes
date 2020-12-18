@@ -1,0 +1,13 @@
+#check recovery.conf
+- name: check recovery.conf
+  stat:
+    path: "{{ postgresql_conf_directory }}/recovery.conf"
+  register: check_slave_recovery
+
+- name: get DB role
+  shell: psql -Aqtc "SELECT pg_is_in_recovery()"
+  become: yes
+  become_user: postgres
+  register: is_slave
+  changed_when: false
+#  ignore_errors: yes

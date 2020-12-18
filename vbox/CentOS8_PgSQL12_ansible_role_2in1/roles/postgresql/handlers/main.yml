@@ -1,0 +1,13 @@
+# file: postgresql/handlers/main.yml
+
+- name: restart postgresql
+  service:
+    name: "{{ postgresql_service_name }}"
+    state: restarted
+
+- name: postgresql reload configures
+  become: yes
+  become_user: "{{postgresql_service_user}}"
+  shell: "{{ postgresql_bin_directory}}/psql {{item.name}} --port={{ postgresql_port | int }} --username {{postgresql_admin_user}} -c 'select pg_reload_conf();'"
+
+
