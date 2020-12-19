@@ -24,9 +24,22 @@
          state: present
          update_cache: yes
 
-      - name: dnf -qy module disable postgresql
-        shell:
-          cmd: dnf -qy module disable postgresql
+#      - name: dnf -qy module disable postgresql
+#        shell:
+#          cmd: dnf -qy module disable postgresql
+
+      - name: PostgreSQL | Disable default dnf postgresql module
+        copy:
+          dest: /etc/dnf/modules.d/postgresql.module
+          content: |
+            [postgresql]
+            name=postgresql
+            stream=
+            profiles=
+            state=disabled
+#        when: 
+#            - ansible_os_family == 'RedHat'
+#             ansible_distribution_major_version | int >= 8
 
       - name: PostgreSQL | Install PostgreSQL | yum
         yum:
