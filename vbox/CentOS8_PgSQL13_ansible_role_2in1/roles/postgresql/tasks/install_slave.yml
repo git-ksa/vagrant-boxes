@@ -1,0 +1,47 @@
+# file: postgresql/tasks/install_slave.yml
+
+# Stop Postgres
+- name: PostgreSQL | Stop PostgreSQL 
+  service:
+    name: "{{ postgresql_service_name }}"
+    state: stopped
+
+# Remove dir
+- name: PostgreSQL | Remove dir
+  file:
+    path: "{{ postgresql_conf_directory }}"
+    state: absent
+
+#  Clear Postgres dir
+# - name: PostgreSQL | Clear dir
+#   become: yes
+#   become_user: "{{ postgresql_service_user }}"
+#   shell: "rm -rf {{ postgresql_conf_directory }}/*"
+
+- name: PostgreSQL | Create dir
+  file:
+    path: "{{ postgresql_conf_directory }}"
+    state: directory
+    owner: "{{ postgresql_service_user }}"
+    group: "{{ postgresql_service_user }}"
+    mode: 0700
+
+# Restore DB from master
+- name: PostgreSQL | Restore
+  become: yes
+  become_user: "{{ postgresql_service_user }}"
+  shell: "PGPASSWORD={{ postgresql_masterpass }} pg_basebackup -w -P -R -X stream -c fast -h {{ postgresql_masterip }} -U postgres -D {{ postgresql_conf_directory }}/"
+
+# Add 
+- name: PostgreSQL | Insert setting to replica
+  blockinfile:
+    path: "{{ postgresql_conf_directory }}/recovery.conf"
+    block: |
+      recovery_target_timeline = 'latest'
+  when: postgresql_version < 12
+
+# Start Poatgres
+- name: PostgreSQL | Start PostgreSQL 
+  service:
+    name: "{{ postgresql_service_name }}"
+    state: started

@@ -1,0 +1,23 @@
+- name: Create a directory if it does not exist
+  file:
+    path: /root/scripts
+    state: directory
+    mode: '0755'
+    
+- copy:
+    src: "{{ role_path }}/backup/db_backup.sh"
+    dest: /root/scripts/db_backup.sh
+    mode: '0700'
+    owner: root
+    group: root
+    force: no
+
+# Добавить задание в кроне
+- name: Add backup to cron
+  cron:
+    name: "Backup PostgreSQL"
+    minute: "0"
+    hour: "1"
+    job: "/root/scripts/db_backup.sh"
+  when: postgresql_backup_to_cron == true
+ 
