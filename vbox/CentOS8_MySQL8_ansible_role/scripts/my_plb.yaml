@@ -1,0 +1,40 @@
+- hosts: database
+  become: yes
+  any_errors_fatal: true
+
+  pre_tasks:
+    - name: Import repository GPG key
+      rpm_key:
+         key: https://repo.mysql.com/RPM-GPG-KEY-mysql
+         state: present
+
+    - name: Install the MySQL repo.
+      yum:
+         name: https://repo.mysql.com//mysql80-community-release-el8-1.noarch.rpm 
+         state: present
+
+  roles:
+    - role: mysql
+
+# Set this to  to forcibly update the root password.
+      mysql_user_password_update: true
+      mysql_root_password_update: true
+      mysql_enabled_on_startup: true
+      mysql_user_password: ZB1C6(RxS-0
+      mysql_root_password: ZB1C6(RxS-0
+      mysql_datadir: /u01/mysql
+      mysql_daemon: mysqld
+      mysql_packages: ['mysql-server','python3-mysqlclient'] 
+      mysql_log_error: /var/log/mysqld.log
+      mysql_syslog_tag: mysqld
+      mysql_pid_file: /var/run/mysqld/mysqld.pid
+      mysql_socket: /var/lib/mysql/mysql.sock
+      mysql_databases:
+        - name: example_db
+      mysql_users:
+        - name: user
+          host: "%"
+          password: ZB1C6(RxS-0
+          priv: "*.*:ALL"
+      tags:
+        - mysql

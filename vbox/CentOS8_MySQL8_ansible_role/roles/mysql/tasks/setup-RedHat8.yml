@@ -1,0 +1,24 @@
+---
+- name: Disable default dnf mysql module
+  copy:
+    dest: /etc/dnf/modules.d/mysql.module
+    content: |
+      [mysql]
+      name=mysql
+      stream=
+      profiles=
+      state=disabled             
+
+- name: Ensure MySQL packages are installed.
+  yum:
+    name: "{{ mysql_packages }}"
+    state: present
+    enablerepo: "{{ mysql_enablerepo | default(omit, true) }}"
+  register: rh_mysql_install_packages
+
+#- name: Ensure MySQL Python libraries are installed.
+#  yum:
+#    name: MySQL-python
+#    state: present
+#    enablerepo: "{{ mysql_enablerepo | default(omit, true) }}"
+
