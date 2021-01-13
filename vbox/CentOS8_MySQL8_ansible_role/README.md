@@ -17,7 +17,7 @@ git clone https://github.com/krivegasa/vagrant-boxes.git
 cd vagrant-boxes/vbox/CentOS8_MySQL8_ansible_role/
 vagrant up
 ```
-See PgSQL on
+See MySQL on
 
 ```
 localhost:3306
