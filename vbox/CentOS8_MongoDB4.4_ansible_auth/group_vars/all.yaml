@@ -1,0 +1,42 @@
+mongodb_version: "4.4"
+mongodb_storage_dbpath: /u01/data            # Directory for datafiles
+mongodb_net_bindip: 0.0.0.0
+mongodb_net_maxconns: 10000                  # Max number of simultaneous connections
+
+#mongodb_login_host: "{{ hostvars[groups['mastergroup'][0]].ansible_default_ipv4.address }}"
+mongodb_login_host: 192.168.4.2
+
+# replication
+mongodb_replication_replset: testrs
+mongodb_security_authorization: enabled
+
+# names and passwords for administrative users
+mongodb_user_admin_name: siteUserAdmin
+mongodb_user_admin_password: passw0rd1
+
+mongodb_root_admin_name: siteRootAdmin
+mongodb_root_admin_password: passw0rd1
+
+mongodb_root_backup_name: backupuser
+mongodb_root_backup_password: passw0rd1
+
+
+#generate key:
+#openssl rand -base64 741
+mongodb_keyfile_content: |
+  5vYASsB5fFxZJx9sr7ZN4dlEvEwQzCbfs83frais3IoQZmurPFdgtWTPAWC+lfCc
+  DmBitHJBrlEqsXFqO8190okCb0PmEFhVgIhJhMfobz4+bItSvFz1sICqXBV3RcrH
+  N2YsSwmfGmDCAyFv0lOtP4offakMtqsZgnl8DLSpFHZvu/WJQXvVWpuCh2Z6198V
+  PAcLvUoLksjJGp+/Ok8+Jj953WFq3h5Jbm5TSg0uZBVdtf8LNfUhUQumbXLLntyr
+  MrlBtJKskRxGzd4zEN77cz4RJsuBR3ZSS0OWKeNS6e2Wfm3uNFO3cy/6HOYmEcBf
+  sLyr2HTn1oKeUzayll8RInubmi+iinSRE4BGF3NzicHabLdj/t7ajnaKQLhIQjmX
+  fBNS4MBXuphxShIlB5vOdM0MIpYwFWChJlONEYQ/n4MjuBSvHDwBxpQZvU3aZPaI
+  /11cxMY/1ysL1+r7wg4GCOA6MDkD7va5CWZ8rEpHRIHv8gtxiTD7olMuhCZjFziP
+  enmKXYWKVHg9T9klpGKr6NXiaeTPZHnL1m4A0QWtIHv1eLEmtuMaFcApWbOmEsr1
+  abNLXQ6eEBBR/1CAJ1q0oTNZU79G4bL3QTZOYXw6NYQnPBuc0b8m7OMnyOBIRV3V
+  QJF48UGWN168z4YCyNFRvxSlPb6EWpWuia+gQv51WMZY9DumeqeUBCG7ZSujt0z1
+  I0ofeuHg/K9vey2GonWfwU8/VN2y9sbjGKmybYR+XZjsQF7swB2KU80Xnu6V9n7H
+  sXaLsRQEulg8gCFE1c/KFcDw+sZnG+B5WqY+ybJ3pQs841vowoUWaAqyZtN3WTez
+  XfWAXDKUVT+gkxfuEtC5ZMoVNTZj5tszZXYpqZkn8KBSCrA4RoO8TuFAdSLFS6yx
+  cOzR9wf2GruljZ7gqtBAKmnspZHwwqgW6Fp4z9WWi7mc+1LjMzLnoEz+5sVD9HWA
+  ZkrMMnY6wPwYwlKebKJ4SBKeXrvG
