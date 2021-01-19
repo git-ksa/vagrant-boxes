@@ -9,4 +9,5 @@
     append_privs: "{{ item.append_privs | default('no') }}"
     encrypted: "{{ item.encrypted | default('no') }}"
   with_items: "{{ mysql_users }}"
+  changed_when: false
   no_log: true
