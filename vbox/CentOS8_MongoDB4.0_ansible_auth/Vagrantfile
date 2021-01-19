@@ -1,0 +1,29 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "centos/8"
+  config.vm.define "mongo-s1" do |server|
+    server.vm.hostname = "mongo-s1"
+    server.vm.network "private_network", ip: "192.168.4.3"
+    server.vm.network "forwarded_port", guest: 27017, host: 37017
+    server.vm.provision "shell", path: "scripts/slave.sh"
+  end
+
+  config.vm.define "mongo-s2" do |server|
+    server.vm.hostname = "mongo-s2"
+    server.vm.network "private_network", ip: "192.168.4.4"
+    server.vm.network "forwarded_port", guest: 27017, host: 47017
+    server.vm.provision "shell", path: "scripts/slave.sh"
+  end
+
+  config.vm.define "mongo-m", primary: true do |server|
+    server.vm.hostname = "mongo-m"
+    server.vm.network "private_network", ip: "192.168.4.2"
+    server.vm.network "forwarded_port", guest: 27017, host: 27017
+    server.vm.provision "shell", path: "scripts/master.sh"
+  end
+
+end
