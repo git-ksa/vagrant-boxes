@@ -1,0 +1,14 @@
+es_config: {
+   node.name: "es3",
+   node.data: true,
+   node.master: false,
+   network.host: "192.168.4.4,127.0.0.1",
+#   network.bind_host: 192.168.4.4,
+   cluster.name: "es-cluster",
+   cluster.initial_master_nodes: "192.168.4.2:9300",
+   discovery.seed_hosts: "192.168.4.2:9300,192.168.4.3:9300,192.168.4.4:9300",
+   http.port: 9200,
+   transport.port: 9300,
+   bootstrap.memory_lock: false,
+   }
+
