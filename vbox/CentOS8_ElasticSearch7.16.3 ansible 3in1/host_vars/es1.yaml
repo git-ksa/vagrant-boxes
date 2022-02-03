@@ -1,6 +1,6 @@
 es_config: {
    node.name: "es1",  
-   node.data: false,
+   node.data: true,
    node.master: true,
    network.host: "192.168.4.2,127.0.0.1", 
 #   network.bind_host: 192.168.4.2,
