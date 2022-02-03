@@ -1,0 +1,5 @@
+#check postmaster.pid
+- name: check postmaster.pid
+  stat:
+    path: "{{ postgresql_conf_directory }}/postmaster.pid"
+  register: check_slave_pid
