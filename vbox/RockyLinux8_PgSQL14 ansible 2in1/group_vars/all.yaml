@@ -1,0 +1,15 @@
+---
+     postgresql_version: 14
+     postgresql_ext_install_contrib: yes
+     postgresql_listen_addresses: "*"
+     postgresql_max_connections: 500
+     postgresql_data_directory: "/u01/data"
+     postgresql_conf_directory: "{{ postgresql_data_directory }}"
+     postgresql_masterpass: 3kZdcpUqRUGr5Ue9iaje
+     postgresql_password_encryption: md5
+
+     postgresql_shared_preload_libraries: 
+        - pg_stat_statements
+     postgresql_extensions:
+        - hstore
+        - pg_stat_statements
