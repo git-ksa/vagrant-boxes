@@ -1,0 +1,20 @@
+es_data_dirs:
+      - "/u01/data"
+es_log_dir: "/var/log/elasticsearch"
+
+es_heap_size: 1g
+es_api_port: 9200
+es_version: 8.0.0
+
+
+es_use_repository: false # Setting this to `false` will stop Ansible from using the official Elastic package from any repository configured on the system.
+es_add_repository: false # Setting this to `false` will stop Ansible to add the official Elastic package repositories (if es_use_repository is true) if you want to use a repo already present.
+
+# the URL to the rpm or deb package for Ansible to install. When using this you will also need to set `es_use_repository: false` and make sure that the `es_version` matches the version being installed from your custom URL. E.g. `es_custom_package_url: https://downloads.example.com/elasticsearch.rpm`
+#es_custom_package_url: http://sat.local/pulp/repos/Gosuslugi/Library/custom/Elasticsearch_7_EL7/elasticsearch_7/Packages/e/elasticsearch-7.9.0-1.x86_64.rpm
+#es_custom_package_url: https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.9.0-x86_64.rpm
+#es_custom_package_url: https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.16.3-x86_64.rpm
+es_custom_package_url: https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.0.0-x86_64.rpm
+
+
+#es_java_install: false
