@@ -24,6 +24,8 @@ echo "vagrant" | sshpass  ssh-copy-id root@192.168.4.2 -f  -o StrictHostKeyCheck
 echo "vagrant" | sshpass  ssh-copy-id root@192.168.4.3 -f  -o StrictHostKeyChecking=no
 echo "vagrant" | sshpass  ssh-copy-id root@192.168.4.4 -f  -o StrictHostKeyChecking=no
 
+pip3 install pymongo==3.12.0
+
 cat > mongodb.sh << EOF
 export ANSIBLE_FORCE_COLOR=true
 ansible-playbook -i inventory mongodb_plb.yaml

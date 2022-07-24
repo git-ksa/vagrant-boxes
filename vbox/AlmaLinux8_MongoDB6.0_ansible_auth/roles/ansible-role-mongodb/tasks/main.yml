@@ -101,7 +101,7 @@
   when: ( mongodb_replication_replset
         and mongodb_security_authorization == 'enabled'
         and mongodb_master is defined and mongodb_master )
-  no_log: true
+#  no_log: true
   tags: [mongodb]
 
 - name: create normal users without replicaset
